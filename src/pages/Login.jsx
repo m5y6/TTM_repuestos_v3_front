@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import '../styles/App.css';
 import { Link } from 'react-router-dom';
-import AuthService from '../services/AuthService';
 
 const Login = () => {
+    const { login } = useContext(AuthContext);
     // Estados para el formulario
     const [formData, setFormData] = useState({
         email: '',
@@ -72,7 +73,7 @@ const Login = () => {
     };
 
     // Manejador de envío del formulario
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         // Resetear mensajes de error
@@ -96,33 +97,18 @@ const Login = () => {
         
         if (!isValid) return;
         
-        // Llamada al servicio de autenticación
-        AuthService.login(formData.email, formData.password)
-            .then(response => {
-                // Asumiendo que el backend devuelve un objeto con la propiedad 'token'
-                if (response.data.token) {
-                    // Guardar el token en localStorage
-                    localStorage.setItem('token', response.data.token);
-                    
-                    alert('¡Inicio de sesión exitoso!');
-                    
-                    // Redirigir a la página principal o al dashboard
-                    window.location.href = '/';
-                } else {
-                    // Si el backend no devuelve un token
-                    setErrores(prev => ({...prev, email: 'Respuesta inesperada del servidor.'}));
-                }
-            })
-            .catch(error => {
-                // Manejar errores de la petición (ej. 401 Unauthorized, 404 Not Found)
-                const errorMessage = error.response?.data?.message || 'Error en el inicio de sesión. Verifique sus credenciales.';
-                setErrores(prev => ({
-                    ...prev,
-                    email: errorMessage, // Mostrar error general en el campo de email
-                    password: ''
-                }));
-                console.error("Error de login:", error);
-            });
+        try {
+            await login(formData.email, formData.password);
+            // La redirección se maneja en el AuthContext
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Error en el inicio de sesión. Verifique sus credenciales.';
+            setErrores(prev => ({
+                ...prev,
+                email: errorMessage,
+                password: ''
+            }));
+            console.error("Error de login:", error);
+        }
     };
 
     return (
@@ -202,5 +188,4 @@ const Login = () => {
         </div>
     );
 };
-
 export default Login;

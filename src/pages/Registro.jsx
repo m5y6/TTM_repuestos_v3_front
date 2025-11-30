@@ -1,21 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import '../styles/App.css';
-import { Link, useNavigate } from 'react-router-dom';
-import AuthService from '../services/AuthService';
+import { Link } from 'react-router-dom';
 
 const Registro = () => {
+    const { register } = useContext(AuthContext);
     // Referencias para los campos del formulario
     const nombreRef = useRef(null);
     const apellidoRef = useRef(null);
     const emailRef = useRef(null);
     const telefonoRef = useRef(null);
-    const empresaRef = useRef(null);
-    const codigoRef = useRef(null);
+
+
     const clave1Ref = useRef(null);
     const clave2Ref = useRef(null);
     const edadRef = useRef(null);
     const formRef = useRef(null);
-    const navigate = useNavigate();
 
     // Estados para manejar errores
     const [errores, setErrores] = useState({});
@@ -24,13 +24,11 @@ const Registro = () => {
         apellido: '',
         email: '',
         telefono: '',
-        empresa: '',
-        codigo: '',
         password: '',
         confirmPassword: '',
         edad: '',
-        terminos: false,
-        newsletter: false
+        terminos: false
+
     });
 
     // Función para mostrar error
@@ -104,13 +102,13 @@ const Registro = () => {
     }, [formData.password, formData.confirmPassword]);
     
     // Validación al enviar
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         // Vuelve a validar todo por si el usuario le da a enviar sin tocar los campos
         let hayErrores = Object.values(errores).some(error => error !== null);
         const camposVacios = Object.keys(formData).some(key => {
-            const optionalFields = ['empresa', 'codigo', 'newsletter', 'terminos'];
+            const optionalFields = ['terminos'];
             if(optionalFields.includes(key)) return false;
             return formData[key] === '';
         });
@@ -127,21 +125,18 @@ const Registro = () => {
             email: formData.email,
             password: formData.password,
             telefono: formData.telefono,
-            edad: formData.edad,
-            empresa: formData.empresa,
+            edad: formData.edad
         };
 
-        // Llamada al servicio de registro
-        AuthService.register(userData)
-            .then(response => {
-                alert('¡Registro exitoso! Ahora serás dirigido a la página de inicio de sesión.');
-                navigate("/login"); // Redirige al usuario a la página de login
-            })
-            .catch(error => {
-                const errorMessage = error.response?.data?.message || 'Hubo un error durante el registro. Por favor, inténtalo de nuevo.';
-                console.error("Error en el registro:", error);
-                alert(errorMessage); // Muestra el error al usuario
-            });
+        try {
+            await register(userData);
+            alert('¡Registro exitoso! Ahora serás dirigido a la página de inicio de sesión.');
+            // La redirección se maneja en el AuthContext
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Hubo un error durante el registro. Por favor, inténtalo de nuevo.';
+            console.error("Error en el registro:", error);
+            alert(errorMessage); // Muestra el error al usuario
+        }
     };
 
     return (
@@ -245,33 +240,6 @@ const Registro = () => {
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="empresa">Empresa (Opcional)</label>
-                        <input 
-                            type="text" 
-                            id="empresa" 
-                            name="empresa" 
-                            placeholder="Nombre de tu empresa"
-                            value={formData.empresa}
-                            onChange={handleChange}
-                            className={errores.empresa ? 'error' : ''}
-                        />
-                        {errores.empresa && <small className="error-text">{errores.empresa}</small>}
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="codigo">Codigo descuento (opcional)</label>
-                        <input 
-                            type="text" 
-                            id="codigo" 
-                            name="codigo" 
-                            placeholder="TTMCODIGO"
-                            value={formData.codigo}
-                            onChange={handleChange}
-                            className={errores.codigo ? 'error' : ''}
-                        />
-                        {errores.codigo && <small className="error-text">{errores.codigo}</small>}
-                    </div>
 
                     <div className="form-group">
                         <label htmlFor="password">Contraseña *</label>
@@ -340,5 +308,4 @@ const Registro = () => {
         </div>
     ); 
 };
-
 export default Registro;
