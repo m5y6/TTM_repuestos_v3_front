@@ -64,8 +64,8 @@ nav.opciones {
     align-items: center;
 }
 
-.botones-auth a.boton-inicio, 
-.botones-auth a.boton-registro {
+.botones-auth .boton-inicio, 
+.botones-auth .boton-registro {
     font-family: "Oswald", sans-serif;
     display: flex;
     padding: 10px 20px;
@@ -85,8 +85,8 @@ nav.opciones {
     white-space: nowrap;
 }
 
-.botones-auth a.boton-inicio:hover,
-.botones-auth a.boton-registro:hover {
+.botones-auth .boton-inicio:hover,
+.botones-auth .boton-registro:hover {
     background-color: #4a7349;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(90, 135, 86, 0.3);

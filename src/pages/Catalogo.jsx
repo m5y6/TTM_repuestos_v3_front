@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ProductoService from '../services/ProductoService'; // 1. IMPORTAR EL SERVICIO
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+import { AuthContext } from '../context/AuthContext'; // Importar AuthContext
+import ProductoService from '../services/ProductoService';
 import '../styles/Catalogo.css';
 import Footer from '../organisms/Footer';
 import Header from '../organisms/Header';
 
-
 const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = false }) => {
-    // 2. USAR ESTADOS PARA DATOS ASÍNCRONOS
+    const { addToCart } = useContext(CartContext);
+    const { user, showNotification } = useContext(AuthContext); // Obtener user y showNotification
     const [productos, setProductos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 3. OBTENER DATOS DE LA API AL MONTAR EL COMPONENTE
     useEffect(() => {
         if (productosActualesProp) {
             setProductos(productosActualesProp);
@@ -21,7 +22,6 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
                 .then(response => {
                     const productosApi = response.data.map(p => ({
                         ...p,
-                        // El resto del componente espera 'imagen' con la URL completa
                         imagen: p.imagenUrl ? `http://localhost:9090${p.imagenUrl}` : '/img/placeholder.jpg'
                     }));
                     setProductos(productosApi);
@@ -35,8 +35,6 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
         }
     }, [productosActualesProp]);
     
-
-    // --- El resto del código de filtros y paginación se mantiene ---
     const [productosFiltrados, setProductosFiltrados] = useState([]);
     const [filtros, setFiltros] = useState({
         categorias: [],
@@ -129,12 +127,13 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
         return () => clearTimeout(timeoutId);
     }, [productos, filtros.busqueda]);
 
-    const agregarAlCarrito = (producto) => {
-        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-        carrito.push(producto);
-        localStorage.setItem('carrito', JSON.stringify(carrito));
-        
-        mostrarNotificacion(`✅ ${producto.nombre} agregado al carrito`);
+    const handleAddToCart = (producto) => {
+        if (user) {
+            addToCart(producto);
+            mostrarNotificacion(`✅ ${producto.nombre} agregado al carrito`);
+        } else {
+            showNotification('Debes iniciar sesión para agregar productos');
+        }
     };
 
     const mostrarNotificacion = (mensaje) => {
@@ -185,13 +184,6 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
         }
         return paginas;
     };
-
-    function addToCart(producto) {
-        const carrito = JSON.parse(localStorage.getItem('carrito')) || []
-        carrito.push(producto)
-        localStorage.setItem('carrito', JSON.stringify(carrito))
-        console.log(carrito)
-    }
 
     return (
         <>
@@ -324,7 +316,7 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
                                                     <div className="producto-acciones">
                                                         <button 
                                                             className="btn-carrito" 
-                                                            onClick={() => addToCart(producto)}
+                                                            onClick={() => handleAddToCart(producto)}
                                                         >Agregar al Carrito</button>
                                                     </div>
                                                 </div>

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { CartContext } from '../context/CartContext';
 import '../styles/Carrito.css';
 import Footer from '../organisms/Footer';
 import Header from '../organisms/Header';
 
-const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => {
+const Carrito = ({ sinHeaderFooter = false }) => {
+    const { cartItems, removeFromCart, changeQuantity } = useContext(CartContext);
+
     // Variables de estado
     const PRECIO_ENVIO = 5990;
     
@@ -12,34 +15,6 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
         'FIEL40': { descuento: 15, descripcion: 'Descuento del 15%' },
         'TTM10EMPRE': { descuento: 40, descripcion: 'Descuento de empresa SOPROCAL 40%' }
     };
-    
-    // Estado inicial de los productos
-    const [productos] = useState(carritoActualProp ||[
-        {
-            id: 1,
-            nombre: 'Aceite Motor 15W-40',
-            descripcion: 'Aceite mineral para motores diésel pesados',
-            precio: 25990,
-            cantidad: 2,
-            imagen: 'img/aceite2.png'
-        },
-        {
-            id: 2,
-            nombre: 'Pastillas de Freno Volvo',
-            descripcion: 'Pastillas de freno cerámicas para camiones Volvo',
-            precio: 89900,
-            cantidad: 1,
-            imagen: 'img/pastilla2.png'
-        },
-        {
-            id: 3,
-            nombre: 'Llanta 295/80R22.5',
-            descripcion: 'Llanta radial para camiones y trailers',
-            precio: 245000,
-            cantidad: 2,
-            imagen: 'img/neumatico2.png'
-        }
-    ]);
     
     // Estado para resumen
     const [resumen, setResumen] = useState({
@@ -67,8 +42,8 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
         let subtotal = 0;
         
         // Calcular subtotal sumando todos los productos
-        productos.forEach(producto => {
-            subtotal += producto.precio * producto.cantidad;
+        cartItems.forEach(producto => {
+            subtotal += producto.producto.precio * producto.cantidad;
         });
         
         // Calcular envío (gratis para compras superiores a $100.000)
@@ -97,29 +72,6 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
         });
     };
 
-    // Función para cambiar cantidad
-    const cambiarCantidad = (id, operacion) => {
-        setProductos(prevProductos => 
-            prevProductos.map(producto => {
-                if (producto.id === id) {
-                    let nuevaCantidad = producto.cantidad;
-                    if (operacion === 'incrementar') {
-                        nuevaCantidad++;
-                    } else if (operacion === 'decrementar' && nuevaCantidad > 1) {
-                        nuevaCantidad--;
-                    }
-                    return { ...producto, cantidad: nuevaCantidad };
-                }
-                return producto;
-            })
-        );
-    };
-
-    // Función para eliminar producto
-    const eliminarProducto = (id) => {
-        setProductos(prevProductos => prevProductos.filter(producto => producto.id !== id));
-    };
-
     // Función para aplicar código de descuento
     const aplicarCodigoDescuento = () => {
         const codigo = codigoInput.trim().toUpperCase();
@@ -138,7 +90,7 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
                 setPorcentajeDescuento(CODIGOS_DESCUENTO[codigo].descuento);
                 
                 mostrarMensajeCodigo(
-                    `¡Código aplicado! ${CODIGOS_DESCUENTO[codigo].descripcion}`, 
+                    `¡Código aplicado! ${CODIGOS_DESCUENTO[codigo].descripcion}`,
                     'exito'
                 );
             }
@@ -183,16 +135,16 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
     // Actualizar resumen cuando cambien los productos o el código
     useEffect(() => {
         actualizarResumen();
-    }, [productos, codigoAplicado, porcentajeDescuento]);
+    }, [cartItems, codigoAplicado, porcentajeDescuento]);
 
     // Si no hay productos, mostrar carrito vacío
-    if (productos.length === 0) {
+    if (cartItems.length === 0) {
         return (
             <div className="carrito-vacio">
                 <div className="carrito-vacio-icon">🛒</div>
                 <h2>Tu carrito está vacío</h2>
                 <p>¡Explora nuestro catálogo y encuentra las mejores refacciones para tu vehículo!</p>
-                <p><a href="catalogo.html">Ver Catálogo</a></p>
+                <p><a href="/catalogo">Ver Catálogo</a></p>
             </div>
         );
     }
@@ -206,36 +158,36 @@ const Carrito = ({carritoActual:carritoActualProp,sinHeaderFooter = false }) => 
             
             <div className="carrito-grid">
                 <div className="carrito-items">
-                    {productos.map(producto => (
-                        <div key={producto.id} className="carrito-item" data-precio={producto.precio}>
+                    {cartItems.map(item => (
+                        <div key={item.id} className="carrito-item" data-precio={item.producto.precio}>
                             <div className="item-imagen">
-                                <img src={producto.imagen} alt={producto.nombre} />
+                                <img src={item.producto.imagenUrl} alt={item.producto.nombre} />
                             </div>
                             <div className="item-info">
-                                <h3>{producto.nombre}</h3>
-                                <p>{producto.descripcion}</p>
+                                <h3>{item.producto.nombre}</h3>
+                                <p>{item.producto.description}</p>
                             </div>
                             <div className="item-precio">
-                                {formatearPrecio(producto.precio * producto.cantidad)}
+                                {formatearPrecio(item.producto.precio * item.cantidad)}
                             </div>
                             <div className="item-cantidad">
                                 <button 
                                     className="btn-cantidad"
-                                    onClick={() => cambiarCantidad(producto.id, 'decrementar')}
+                                    onClick={() => changeQuantity(item.id, item.cantidad - 1)}
                                 >
                                     -
                                 </button>
-                                <span className="cantidad-numero">{producto.cantidad}</span>
+                                <span className="cantidad-numero">{item.cantidad}</span>
                                 <button 
                                     className="btn-cantidad"
-                                    onClick={() => cambiarCantidad(producto.id, 'incrementar')}
+                                    onClick={() => changeQuantity(item.id, item.cantidad + 1)}
                                 >
                                     +
                                 </button>
                             </div>
                             <button 
                                 className="btn-eliminar"
-                                onClick={() => eliminarProducto(producto.id)}
+                                onClick={() => removeFromCart(item.id)}
                             >
                                 ×
                             </button>
