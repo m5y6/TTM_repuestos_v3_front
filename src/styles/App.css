@@ -35,7 +35,7 @@ nav.opciones {
     color: #5a8756;
     font-family: "Oswald", sans-serif;
     font-weight: 1000;
-    font-size: 1.2rem; /* Drastically reduced font size */
+    font-size: 2rem; /* Drastically reduced font size */
     display: flex;
     justify-content: center; /* Changed to center for individual links */
     padding: 0.5rem 0.8rem; /* Drastically reduced padding */
