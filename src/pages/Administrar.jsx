@@ -4,6 +4,8 @@ import ProductoService from "../services/ProductoService";
 import Header from "../organisms/Header";
 import Footer from "../organisms/Footer";
 import "../styles/administrar.css";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 
 const Administrar = () => {
   const [nombre, setNombre] = useState("");
@@ -35,20 +37,58 @@ const Administrar = () => {
     setImagenFile(e.target.files[0]);
   };
 
-  const saveOrUpdateProducto = (e) => {
+  const uploadToS3 = async (file) => {
+    const region = import.meta.env.VITE_AWS_REGION;
+
+    const s3Client = new S3Client({
+      region: region,
+      credentials: {
+        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+        sessionToken: import.meta.env.VITE_AWS_SESSION_TOKEN,
+      },
+    });
+
+    const target = {
+      Bucket: "ttm-repuestos-imagenes",
+      Key: `${Date.now()}_${file.name}`,
+      Body: file,
+    };
+
+    try {
+      const uploader = new Upload({ client: s3Client, params: target });
+      await uploader.done();
+      const url = `https://${target.Bucket}.s3.${region}.amazonaws.com/${target.Key}`;
+      return url;
+    } catch (error) {
+      console.error("Falló la subida a S3:", error);
+      throw error;
+    }
+  };
+
+  const saveOrUpdateProducto = async (e) => {
     e.preventDefault();
 
-    // The backend does not support multipart/form-data for this endpoint.
-    // We will always send application/json and ignore the file upload for now.
-    const producto = { 
-      nombre, 
-      precio: parseFloat(precio), 
-      categoria, 
-      description, 
+    let imageUrl = imagen_url;
+
+    if (imagenFile) {
+      try {
+        imageUrl = await uploadToS3(imagenFile);
+      } catch (error) {
+        alert("La imagen no pudo subirse. El producto no se guardará.");
+        return;
+      }
+    }
+
+    const producto = {
+      nombre,
+      precio: parseFloat(precio),
+      categoria,
+      description,
       stock: parseInt(stock, 10),
-      imagen_url // Keep existing image URL when editing
+      imagen_url: imageUrl,
     };
-      
+
     const promise = id
       ? ProductoService.updateProductos(id, producto)
       : ProductoService.createProductos(producto);
@@ -129,10 +169,20 @@ const Administrar = () => {
               <input
                 type="file"
                 accept="image/png, image/jpeg"
-                disabled
-                title="La subida de imágenes está deshabilitada temporalmente por un problema del backend."
+                onChange={handleImagenChange}
               />
-              {id && imagen_url && <p>Imagen actual: <a href={imagen_url} target="_blank" rel="noopener noreferrer">{imagen_url}</a></p>}
+              {id && imagen_url && (
+                <p>
+                  Imagen actual:{" "}
+                  <a
+                    href={imagen_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {imagen_url}
+                  </a>
+                </p>
+              )}
             </div>
             <button type="submit">{id ? "Actualizar" : "Guardar"}</button>
           </form>

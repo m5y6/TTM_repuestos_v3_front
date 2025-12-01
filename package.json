@@ -11,6 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.940.0",
+    "@aws-sdk/lib-storage": "^3.940.0",
     "react-router-dom": "^7.9.6",
     "react-router-hash-link": "^2.4.3"
   },
