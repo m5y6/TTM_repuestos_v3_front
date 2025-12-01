@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
+import CartService from '../services/CartService';
 import '../styles/Carrito.css';
 import Footer from '../organisms/Footer';
 import Header from '../organisms/Header';
 
 const Carrito = ({ sinHeaderFooter = false }) => {
-    const { cartItems, removeFromCart, changeQuantity } = useContext(CartContext);
+    const { cartItems, removeFromCart, changeQuantity, clearCart } = useContext(CartContext);
+    const navigate = useNavigate();
 
     // Variables de estado
     const PRECIO_ENVIO = 5990;
@@ -122,14 +125,17 @@ const Carrito = ({ sinHeaderFooter = false }) => {
     };
 
     // Función para proceder al pago
-    const procederAlPago = () => {
-        let mensaje = `¡Gracias por su compra! Total a pagar: ${formatearPrecio(resumen.total)}`;
-        
-        if (codigoAplicado) {
-            mensaje += `\n¡Felicidades! Has ahorrado ${formatearPrecio(montoDescuento)} con el código de descuento.`;
+    const procederAlPago = async () => {
+        try {
+            const response = await CartService.checkout();
+            if (response.status === 200) {
+                clearCart();
+                navigate('/compra-exitosa', { state: { order: response.data } });
+            }
+        } catch (error) {
+            console.error('Error en el checkout:', error);
+            alert('Hubo un error al procesar la compra. Por favor, inténtalo de nuevo.');
         }
-        
-        alert(mensaje + '\nSerá redirigido a la página de pago.');
     };
 
     // Actualizar resumen cuando cambien los productos o el código
@@ -273,5 +279,4 @@ const Carrito = ({ sinHeaderFooter = false }) => {
         
     );
 };
-
 export default Carrito;

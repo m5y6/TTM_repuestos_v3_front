@@ -1,42 +1,67 @@
 import axios from "axios";
-const BASE_URL = "http://localhost:9090/api/productos";
+
+const API_URL = "http://localhost:9090/api/productos";
+
+// Create an axios instance
+const api = axios.create({
+  baseURL: API_URL,
+});
+
+// Add a request interceptor to add the token to the headers
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    // Do NOT set Content-Type manually for FormData
+    // Axios will automatically set it with the correct boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Redirect to login page
+      // We can't use useNavigate here, so we use window.location
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 class ProductosService {
   getAllProductos() {
-    const token = localStorage.getItem("token");
-    return axios.get(BASE_URL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return api.get("");
   }
-  getProductoById(id) {
-    return axios.get(`${BASE_URL}/${id}`);
-  }
-  createProductos(producto) {
-    const token = localStorage.getItem("token");
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
 
-    return axios.post(BASE_URL, producto, config);
+  getProductoById(id) {
+    return api.get(`/${id}`);
   }
+
+  createProductos(producto) {
+    return api.post("", producto);
+  }
+
   updateProductos(id, producto) {
-    const token = localStorage.getItem('token');
-    return axios.put(`${BASE_URL}/${id}`, producto, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    return api.put(`/${id}`, producto);
   }
+
   deleteProducto(id) {
-    const token = localStorage.getItem('token');
-    return axios.delete(`${BASE_URL}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    return api.delete(`/${id}`);
   }
 }
+
 export default new ProductosService();

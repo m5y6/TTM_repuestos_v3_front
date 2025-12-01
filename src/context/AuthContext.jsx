@@ -33,6 +33,9 @@ export const AuthProvider = ({ children }) => {
             // Assuming the response includes the user object and a token
             const userData = response.data;
             localStorage.setItem('user', JSON.stringify(userData));
+            if (userData.token) {
+                localStorage.setItem('token', userData.token);
+            }
             setUser(userData);
             navigate('/'); // Redirect to home after login
             return response;
@@ -56,6 +59,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
         setUser(null);
         navigate('/login'); // Redirect to login after logout
     };

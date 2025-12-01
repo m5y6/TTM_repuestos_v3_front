@@ -239,7 +239,7 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
                         <div className="filtro-grupo">
                             <h4>Categoría</h4>
                             <div className="filtro-opciones">
-                                {['motor', 'frenos', 'suspension', 'electrico', 'neumaticos', 'filtros'].map(categoria => (
+                                {['motor', 'frenos', 'suspension', 'electrico', 'neumaticos', 'filtros', 'otro'].map(categoria => (
                                     <label key={categoria} className="filtro-checkbox">
                                         <input 
                                             type="checkbox" 
