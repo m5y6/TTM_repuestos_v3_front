@@ -22,16 +22,6 @@ nav.opciones {
     column-gap: .1rem;
 }
 
-.opciones > a {
-    color: #5a8756;
-    font-family: "Oswald", sans-serif;
-    font-weight: 1000;
-    font-size: 2rem;
-    display: flex;
-    justify-content: space-between;
-    padding: 3rem;
-    text-decoration: none;
-}
 
 #logo {
     display: flex;
@@ -380,10 +370,7 @@ nav.opciones {
         justify-content: center;
     }
     
-    .opciones > a {
-        font-size: 1.5rem;
-        padding: 1.5rem;
-    }
+
     
     #logo {
         height: 8rem;
@@ -392,11 +379,7 @@ nav.opciones {
 }
 
 @media (max-width: 768px) {
-    .opciones > a {
-        font-size: 1.5rem;
-        padding: 2rem;
-    }
-    
+
     .pedido-container {
         padding: 30px;
         margin: 20px 0; /* Ajustado para que no se salga */
@@ -433,11 +416,7 @@ nav.opciones {
         align-items: center;
     }
 
-    .opciones > a {
-        font-size: 1.2rem;
-        padding: 0.5rem 1rem;
-    }
-    
+
     #logo {
         height: 6rem;
         width: 6rem;
