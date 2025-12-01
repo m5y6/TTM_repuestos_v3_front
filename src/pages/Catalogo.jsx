@@ -22,7 +22,7 @@ const Catalogo = ({ productosActuales: productosActualesProp, sinHeaderFooter = 
                 .then(response => {
                     const productosApi = response.data.map(p => ({
                         ...p,
-                        imagen: p.imagenUrl ? `http://localhost:9090${p.imagenUrl}` : '/img/placeholder.jpg'
+                        imagen: p.imagen_url || '/img/placeholder.jpg'
                     }));
                     setProductos(productosApi);
                     setLoading(false);

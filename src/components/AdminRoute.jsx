@@ -10,7 +10,7 @@ const AdminRoute = () => {
         return <div>Loading...</div>;
     }
 
-    return user && user.rol == 2 ? <Outlet /> : <Navigate to="/" />;
+    return user && (user.rol === 1 || user.rol === 2) ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default AdminRoute;

@@ -101,12 +101,20 @@ const Login = () => {
             await login(formData.email, formData.password);
             // La redirección se maneja en el AuthContext
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Error en el inicio de sesión. Verifique sus credenciales.';
-            setErrores(prev => ({
-                ...prev,
-                email: errorMessage,
-                password: ''
-            }));
+            // Si el error es por credenciales incorrectas (código 401)
+            if (error.response && error.response.status === 401) {
+                setErrores(prev => ({
+                    ...prev,
+                    email: 'Correo o contraseña incorrecta' // <-- MENSAJE PERSONALIZADO
+                }));
+            } else {
+                // Para cualquier otro tipo de error
+                const errorMessage = error.response?.data?.message || 'Ocurrió un error inesperado.';
+                setErrores(prev => ({
+                    ...prev,
+                    email: errorMessage
+                }));
+            }
             console.error("Error de login:", error);
         }
     };
