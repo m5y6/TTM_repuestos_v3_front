@@ -76,4 +76,14 @@ div {
   table button:last-of-type {
     background-color: #dc3545;
   }
+
+.admin-container {
+  background-color: #f9f9f9;
+  border: 2px solid white;
+  border-radius: 15px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 800px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
   

@@ -34,6 +34,10 @@ class CartService {
     clearCart() {
         return axios.delete(API_URL, { headers: getAuthHeaders() });
     }
+
+    checkout() {
+        return axios.post(API_URL + '/checkout', {}, { headers: getAuthHeaders() });
+    }
 }
 
 export default new CartService();

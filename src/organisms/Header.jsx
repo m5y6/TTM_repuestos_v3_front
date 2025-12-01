@@ -1,43 +1,50 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <>
-      {/* Contenido JSX del Header */}
-      <header className="primera">
+      <header className="primera" id="mainHeader">
         <div id="logo">
           <img src="/img/logo3.png" alt="logo" />
         </div>
 
-        <nav className="opciones">
-          <Link to="/">Inicio</Link>
-          <Link to="/catalogo">Catálogo</Link>
+
+        <nav className={`opciones ${isMenuOpen ? 'open' : ''}`}>
+          <Link to="/" onClick={toggleMenu}>Inicio</Link>
+          <Link to="/catalogo" onClick={toggleMenu}>Catálogo</Link>
           {user && (
             <>
-              <Link to="/carrito">Carrito</Link>
-              <Link to="/pedido">Pedido</Link>
-              <Link to="/envio">Envio</Link>
-              {user.roles && user.roles.includes('ROLE_ADMIN') && (
-                <Link to="/administrar">Administrar</Link>
+              <Link to="/carrito" onClick={toggleMenu}>Carrito</Link>
+              <Link to="/pedido" onClick={toggleMenu}>Pedido</Link>
+              <Link to="/envio" onClick={toggleMenu}>Envio</Link>
+              {(user.rol == 2 || user.id === 1) && (
+                <>
+                  <Link to="/administrar" onClick={toggleMenu}>Administrar</Link>
+                  <Link to="/ventas" onClick={toggleMenu}>Ventas</Link>
+                </>
               )}
             </>
           )}
         </nav>
         
-        <div className="botones-auth">
+        <div className={`botones-auth ${isMenuOpen ? 'open' : ''}`}>
           {user ? (
             <>
-              <span className="usuario-nombre">Hola, {user.nombre}</span>
-              <button onClick={logout} className="boton-inicio">Cerrar Sesión</button>
+              <button onClick={() => { logout(); toggleMenu(); }} className="boton-inicio">Cerrar Sesión</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="boton-inicio">Iniciar Sesión</Link>
-              <Link to="/registro" className="boton-registro">Registrarse</Link>
+              <Link to="/login" onClick={toggleMenu} className="boton-inicio">Iniciar Sesión</Link>
+              <Link to="/registro" onClick={toggleMenu} className="boton-registro">Registrarse</Link>
             </>
           )}
         </div>

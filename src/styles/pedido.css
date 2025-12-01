@@ -15,16 +15,6 @@ body {
     flex-direction: column; /* Añadido para sticky footer */
 }
 
-header.primera {
-    height: 150px;
-    width: 100%;
-    display: flex;
-    column-gap: 1rem;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #000000;
-    padding: 0px 2rem;
-}
 
 nav.opciones {
     padding-left: 10px;
@@ -384,13 +374,7 @@ nav.opciones {
 /* === MEDIA QUERIES === */
 
 @media (max-width: 900px) {
-    /* Header vertical para tablets */
-    header.primera {
-        flex-direction: column;
-        height: auto;
-        padding: 1rem;
-        gap: 1rem;
-    }
+
     
     nav.opciones {
         justify-content: center;
