@@ -21,18 +21,18 @@ export default function Header() {
         <nav className={`opciones ${isMenuOpen ? 'open' : ''}`}>
           <Link to="/" onClick={toggleMenu}>Inicio</Link>
           <Link to="/catalogo" onClick={toggleMenu}>Catálogo</Link>
-          {user && user.rol === 0 && (
+          {user && (
             <>
               <Link to="/carrito" onClick={toggleMenu}>Carrito</Link>
               <Link to="/pedido" onClick={toggleMenu}>Pedido</Link>
               <Link to="/envio" onClick={toggleMenu}>Envio</Link>
             </>
           )}
-          {user && user.rol === 2 && (
-            <Link to="/administrar" onClick={toggleMenu}>Administrar</Link>
-          )}
           {user && (user.rol === 1 || user.rol === 2) && (
-            <Link to="/ventas" onClick={toggleMenu}>Ventas</Link>
+            <>
+              <Link to="/administrar" onClick={toggleMenu}>Administrar</Link>
+              <Link to="/ventas" onClick={toggleMenu}>Ventas</Link>
+            </>
           )}
         </nav>
         

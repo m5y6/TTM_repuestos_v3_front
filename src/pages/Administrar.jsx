@@ -4,8 +4,7 @@ import ProductoService from "../services/ProductoService";
 import Header from "../organisms/Header";
 import Footer from "../organisms/Footer";
 import "../styles/administrar.css";
-import { S3Client } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
+import { uploadFileToS3 } from '../services/UploadService';
 
 const Administrar = () => {
   const [nombre, setNombre] = useState("");
@@ -14,7 +13,8 @@ const Administrar = () => {
   const [description, setDescription] = useState("");
   const [stock, setStock] = useState("");
   const [imagen_url, setImagenUrl] = useState(""); // Para mostrar la imagen actual al editar
-  const [imagenFile, setImagenFile] = useState(null); // Para el nuevo archivo de imagen
+  const [isUploading, setIsUploading] = useState(false);
+
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,52 +33,23 @@ const Administrar = () => {
     }
   }, [id]);
 
-  const handleImagenChange = (e) => {
-    setImagenFile(e.target.files[0]);
-  };
-
-  const uploadToS3 = async (file) => {
-    const region = import.meta.env.VITE_AWS_REGION;
-
-    const s3Client = new S3Client({
-      region: region,
-      credentials: {
-        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
-        sessionToken: import.meta.env.VITE_AWS_SESSION_TOKEN,
-      },
-    });
-
-    const target = {
-      Bucket: "ttm-repuestos-imagenes",
-      Key: `${Date.now()}_${file.name}`,
-      Body: file,
-    };
-
-    try {
-      const uploader = new Upload({ client: s3Client, params: target });
-      await uploader.done();
-      const url = `https://${target.Bucket}.s3.${region}.amazonaws.com/${target.Key}`;
-      return url;
-    } catch (error) {
-      console.error("Falló la subida a S3:", error);
-      throw error;
+  const handleImagenChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setIsUploading(true);
+      try {
+        const imageUrl = await uploadFileToS3(file);
+        setImagenUrl(imageUrl);
+      } catch (error) {
+        alert("Falló la subida de la imagen. Por favor, inténtalo de nuevo.");
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
   const saveOrUpdateProducto = async (e) => {
     e.preventDefault();
-
-    let imageUrl = imagen_url;
-
-    if (imagenFile) {
-      try {
-        imageUrl = await uploadToS3(imagenFile);
-      } catch (error) {
-        alert("La imagen no pudo subirse. El producto no se guardará.");
-        return;
-      }
-    }
 
     const producto = {
       nombre,
@@ -86,7 +57,7 @@ const Administrar = () => {
       categoria,
       description,
       stock: parseInt(stock, 10),
-      imagen_url: imageUrl,
+      imagen_url: imagen_url,
     };
 
     const promise = id
@@ -171,7 +142,8 @@ const Administrar = () => {
                 accept="image/png, image/jpeg"
                 onChange={handleImagenChange}
               />
-              {id && imagen_url && (
+              {isUploading && <p>Subiendo imagen...</p>}
+              {id && imagen_url && !isUploading && (
                 <p>
                   Imagen actual:{" "}
                   <a
@@ -184,7 +156,7 @@ const Administrar = () => {
                 </p>
               )}
             </div>
-            <button type="submit">{id ? "Actualizar" : "Guardar"}</button>
+            <button type="submit" disabled={isUploading}>{id ? "Actualizar" : "Guardar"}</button>
           </form>
         </div>
       </main>
