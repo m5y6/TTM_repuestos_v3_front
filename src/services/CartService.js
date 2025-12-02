@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:9090/api/carrito';
+const API_URL = '/api/carrito';
 
 // Helper para obtener el token de autenticación
 const getAuthHeaders = () => {
